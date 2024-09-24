@@ -1,0 +1,4 @@
+.env
+node_modules/
+dummy_api/node_modules/
+.idea/
