@@ -8,66 +8,89 @@ const invalidTokenService = require("../services/invalidToken.service");
 
 const userController = {};
 
+/**
+ * Registers a new user with username, email, password, and role.
+ *
+ * @async
+ * @function registerUser
+ * @memberof userController
+ * @param {Object} req - Express request object.
+ * @param {Object} req.body - The request body.
+ * @param {string} req.body.username - The user's username.
+ * @param {string} req.body.email - The user's email.
+ * @param {string} req.body.password - The user's password.
+ * @param {string} req.body.role - The user's role.
+ * @param {Object} res - Express response object.
+ * @returns {Promise<Object>} JSON response containing a success message and user ID, or an error message.
+ */
 userController.registerUser = async (req, res) => {
     try {
         const {username, email, password, role} = req.body;
 
         if (!username || !email || !password || !checkEmail(email) || !checkPassword(password)) {
-            res.status(422).json({
+            return res.status(422).json({
                 message: 'Invalid input. Please enter a valid username, email and password.'
             });
-            return;
         }
 
         if (await userService.getUserByEmail(email)) {
-            res.status(409).json({
+            return res.status(409).json({
                 message: 'User with that email already exists.'
             });
-            return;
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
         const user = await userService.createUser({username, email, password: hashedPassword, role});
-        res.status(201).json({
+        return res.status(201).json({
             message: 'User created successfully',
             userId: user.id
         });
 
     } catch (error) {
-        res.status(500).json({
+        return res.status(500).json({
             message: error.message
         });
     }
 }
 
+/**
+ * Authenticates a user and provides access and refresh tokens.
+ *
+ * @async
+ * @function loginUser
+ * @memberof userController
+ * @param {Object} req - Express request object.
+ * @param {Object} req.body - The request body.
+ * @param {string} req.body.email - The user's email.
+ * @param {string} req.body.password - The user's password.
+ * @param {Object} res - Express response object.
+ * @returns {Promise<Object>} JSON response containing user data and tokens, or an error message.
+ */
 userController.loginUser = async (req, res) => {
     try {
         const {email, password} = req.body;
 
         if (!email || !password || !checkEmail(email) || !checkPassword(password)) {
-            res.status(422).json({
+            return res.status(422).json({
                 message: 'Invalid input. Please enter a valid email and password.'
             });
-            return;
         }
 
         const user = await userService.getUserByEmail(email);
 
         if (!user) {
-            res.status(401).json({
+            return res.status(401).json({
                 message: "Invalid email or password."
-            })
-            return;
+            });
         }
 
         const isValidPassword = await bcrypt.compare(password, user.password);
 
         if (!isValidPassword) {
-            res.status(401).json({
+            return res.status(401).json({
                 message: "Invalid email or password."
             })
-            return;
         }
 
         const accessToken = jwt.sign({userId: user.id}, process.env.ACCESS_TOKEN_SECRET, {
@@ -91,7 +114,24 @@ userController.loginUser = async (req, res) => {
 
 
     } catch (error) {
-        res.status(500).json({
+        return res.status(500).json({
+            message: error.message
+        });
+    }
+}
+
+/**
+ * Refreshes the access token using the provided refresh token.
+ *
+ * @async
+ * @function refreshToken
+ * @memberof userController
+ * @param {Object} req - Express request object.
+ * @param {Object} req.body - The request body.
+ * @param {string} req.body.refreshToken - The refresh token.
+ * @param {Object} res - Express response object.
+ * @returns {Promise<Object>} JSON response containing new access and refresh tokens, or an error message.
+ */
 userController.refreshToken = async (req, res) => {
     try {
         const {refreshToken} = req.body;
