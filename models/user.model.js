@@ -30,5 +30,14 @@ module.exports = (sequelize) => {
         }
     );
 
+    User.associate = (db) => {
+        User.hasMany(db['RefreshToken'], {
+            foreignKey: 'userId'
+        });
+        User.hasMany(db['InvalidToken'], {
+            foreignKey: 'userId'
+        });
+    }
+
     return User;
 }
