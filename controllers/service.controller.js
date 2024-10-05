@@ -11,7 +11,7 @@ const serviceController = {};
  * @param {Object} req - Express request object.
  * @param {Object} req.body - The request body containing service data.
  * @param {Object} res - Express response object.
- * @returns {Promise<Object>} JSON response containing the newly created service or an error message.
+ * @returns {Promise<void>} JSON response containing the newly created service or an error message.
  */
 serviceController.createService = (req, res) => {
     serviceService.createService(req.body).then((service) => {
@@ -33,7 +33,7 @@ serviceController.createService = (req, res) => {
  * @param {Object} req.params - The request parameters.
  * @param {string} req.params.apiName - The name of the API to retrieve the service.
  * @param {Object} res - Express response object.
- * @returns {Promise<Object>} JSON response containing the requested service or an error message.
+ * @returns {Promise<void>} JSON response containing the requested service or an error message.
  */
 serviceController.getServiceByName = (req, res) => {
     serviceService.getServiceByName(req.params.apiName).then((service) => {
@@ -53,7 +53,7 @@ serviceController.getServiceByName = (req, res) => {
  * @memberof serviceController
  * @param {Object} req - Express request object.
  * @param {Object} res - Express response object.
- * @returns {Promise<Object>} JSON response containing a list of services or an error message.
+ * @returns {Promise<void>} JSON response containing a list of services or an error message.
  */
 serviceController.getServices = (req, res) => {
     serviceService.getServices().then((services) => {
@@ -75,7 +75,7 @@ serviceController.getServices = (req, res) => {
  * @param {Object} req.params - The request parameters.
  * @param {string} req.params.apiName - The name of the API to delete the service.
  * @param {Object} res - Express response object.
- * @returns {Promise<Object>} JSON response confirming the deletion or an error message.
+ * @returns {Promise<void>} JSON response confirming the deletion or an error message.
  */
 serviceController.deleteServiceByName = (req, res) => {
     serviceService.deleteServiceByName(req.params.apiName).then((service) => {
@@ -98,7 +98,7 @@ serviceController.deleteServiceByName = (req, res) => {
  * @param {string} req.params.apiName - The name of the API to which the instance will be added.
  * @param {Object} req.body - The instance data to be added.
  * @param {Object} res - Express response object.
- * @returns {Promise<Object>} JSON response containing the newly added instance or an error message.
+ * @returns {Promise<void>} JSON response containing the newly added instance or an error message.
  */
 serviceController.addInstance = (req, res) => {
     serviceService.addInstance(req.params.apiName, req.body).then((instance) => {
@@ -110,4 +110,4 @@ serviceController.addInstance = (req, res) => {
     })
 }
 
-module.exports = serviceController;
+module.exports = Object.freeze(serviceController);
