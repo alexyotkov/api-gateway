@@ -24,9 +24,9 @@ const checkAuth = async (req, res, next) => {
         });
     }
 
-    try {
-        const accessToken = req.headers.authorization.split(' ')[1];
+    const accessToken = req.headers.authorization.split(' ')[1];
 
+    try {
         // Check if token is in the invalid tokens list
         const invalidToken = await invalidTokenService.getInvalidToken(accessToken);
 
@@ -36,13 +36,18 @@ const checkAuth = async (req, res, next) => {
                 code: 'INVALID_ACCESS_TOKEN'
             });
         }
-
+    } catch (error) {
+        return res.status(500).json({
+            message: error.message
+        });
+    }
+    try {
         // Verify token using JWT and extract payload
         const decoded = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
 
         // Attach token and user information to the request object
-        req.accessToken = { value: accessToken, exp: decoded.exp };
-        req.user = { userId: decoded.userId };
+        req.accessToken = {value: accessToken, exp: decoded.exp};
+        req.user = {userId: decoded.userId};
 
         next(); // Proceed to the next middleware or route handler
 
@@ -61,13 +66,6 @@ const checkAuth = async (req, res, next) => {
             return res.status(401).json({
                 message: 'Access token is invalid.',
                 code: 'INVALID_ACCESS_TOKEN'
-            });
-        }
-
-        // Handle unexpected errors
-        else {
-            return res.status(500).json({
-                message: error.message
             });
         }
     }

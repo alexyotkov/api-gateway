@@ -24,34 +24,39 @@ const userController = {};
  * @returns {Promise<Object>} JSON response containing a success message and user ID, or an error message.
  */
 userController.registerUser = async (req, res) => {
+    const {username, email, password, role} = req.body;
+
+    if (!username || !email || !password || !checkEmail(email) || !checkPassword(password)) {
+        return res.status(422).json({
+            message: 'Invalid input. Please enter a valid username, email and password.'
+        });
+    }
+
     try {
-        const {username, email, password, role} = req.body;
-
-        if (!username || !email || !password || !checkEmail(email) || !checkPassword(password)) {
-            return res.status(422).json({
-                message: 'Invalid input. Please enter a valid username, email and password.'
-            });
-        }
-
         if (await userService.getUserByEmail(email)) {
             return res.status(409).json({
                 message: 'User with that email already exists.'
             });
         }
-
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        const user = await userService.createUser({username, email, password: hashedPassword, role});
-        return res.status(201).json({
-            message: 'User created successfully',
-            userId: user.id
-        });
-
     } catch (error) {
         return res.status(500).json({
             message: error.message
         });
     }
+
+    try {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const user = await userService.createUser({username, email, password: hashedPassword, role});
+        return res.status(201).json({
+            message: 'User created successfully',
+            userId: user.id
+        });
+    } catch (error) {
+        return res.status(500).json({
+            message: error.message
+        });
+    }
+
 }
 
 /**
@@ -68,15 +73,15 @@ userController.registerUser = async (req, res) => {
  * @returns {Promise<Object>} JSON response containing user data and tokens, or an error message.
  */
 userController.loginUser = async (req, res) => {
+    const {email, password} = req.body;
+
+    if (!email || !password || !checkEmail(email) || !checkPassword(password)) {
+        return res.status(422).json({
+            message: 'Invalid input. Please enter a valid email and password.'
+        });
+    }
+
     try {
-        const {email, password} = req.body;
-
-        if (!email || !password || !checkEmail(email) || !checkPassword(password)) {
-            return res.status(422).json({
-                message: 'Invalid input. Please enter a valid email and password.'
-            });
-        }
-
         const user = await userService.getUserByEmail(email);
 
         if (!user) {
@@ -133,21 +138,22 @@ userController.loginUser = async (req, res) => {
  * @returns {Promise<Object>} JSON response containing new access and refresh tokens, or an error message.
  */
 userController.refreshToken = async (req, res) => {
+    const {refreshToken} = req.body;
+
+    if (!refreshToken) {
+        return res.status(422).json({
+            message: 'Refresh token is missing.'
+        });
+    }
+
     try {
-        const {refreshToken} = req.body;
-
-        if (!refreshToken) {
-            return res.status(422).json({
-                message: 'Refresh token is missing.'
-            });
-        }
-
         const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
 
         const userRefreshToken = await refreshTokenService.getRefreshToken({
             refreshToken: refreshToken,
             userId: decoded.userId
         });
+
 
         if (!userRefreshToken) {
             return res.status(401).json({
@@ -174,9 +180,8 @@ userController.refreshToken = async (req, res) => {
             refreshToken: newRefreshToken
         });
 
-    }
-    catch (error) {
-        if (error instanceof jwt.TokenExpiredError|| error instanceof jwt.JsonWebTokenError) {
+    } catch (error) {
+        if (error instanceof jwt.TokenExpiredError || error instanceof jwt.JsonWebTokenError) {
             return res.status(401).json({
                 message: 'Refresh token is invalid or expired.'
             });
@@ -209,8 +214,7 @@ userController.logout = async (req, res) => {
         });
 
         return res.status(204).json();
-    }
-    catch (error) {
+    } catch (error) {
         return res.status(500).json({
             message: error.message
         });
