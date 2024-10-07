@@ -28,7 +28,8 @@ module.exports = (sequelize) => {
 
     Service.associate = (db) => {
         Service.hasMany(db['Instance'], {
-            foreignKey: 'serviceId'
+            foreignKey: 'serviceId',
+            as: 'instances',
         });
     };
 
