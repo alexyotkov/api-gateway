@@ -1,9 +1,11 @@
 const db = require('../models');
+const redisService = require("../redis");
 const InvalidToken = db['InvalidToken'];
 const invalidTokenService = {};
 
 /**
  * Creates a new invalid token entry in the database.
+ * Also updates the cache entry for the token.
  *
  * @async
  * @function createInvalidToken
@@ -20,15 +22,15 @@ invalidTokenService.createInvalidToken = async ({token, userId, exp}) => {
             userId: userId,
             exp: exp
         });
-
+        await redisService.updateCache(`blacklist:${token}`, invalidToken);
         return invalidToken;
     } catch (error) {
-        return error;
+        throw error;
     }
 }
 
 /**
- * Retrieves an invalid token entry from the database.
+ * Retrieves an invalid token entry from the database or from the cache if it is present.
  *
  * @async
  * @function getInvalidToken
@@ -37,10 +39,12 @@ invalidTokenService.createInvalidToken = async ({token, userId, exp}) => {
  */
 invalidTokenService.getInvalidToken = async (token) => {
     try {
-        const invalidToken = await InvalidToken.findOne({ where: { token: token } });
+        const invalidToken = await redisService.getOrSetCache(`blacklist:${token}`, () => {
+            return InvalidToken.findOne({where: {token: token}});
+        });
         return invalidToken;
     } catch (error) {
-        return error;
+        throw error;
     }
 }
 

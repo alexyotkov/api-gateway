@@ -24,7 +24,8 @@ module.exports = (sequelize) => {
 
     Instance.associate = (db) => {
         Instance.belongsTo(db['Service'], {
-            foreignKey: 'serviceId'
+            foreignKey: 'serviceId',
+            onDelete: 'CASCADE',
         });
     };
 

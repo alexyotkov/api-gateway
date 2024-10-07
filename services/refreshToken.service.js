@@ -21,7 +21,7 @@ refreshTokenService.createRefreshToken = async ({refreshToken, userId}) => {
 
         return userRefreshToken;
     } catch (error) {
-        return error;
+        throw error;
     }
 }
 
@@ -45,7 +45,7 @@ refreshTokenService.getRefreshToken = async ({refreshToken, userId}) => {
         });
         return userRefreshToken;
     } catch (error) {
-        return error;
+        throw error;
     }
 }
 
@@ -61,14 +61,14 @@ refreshTokenService.deleteRefreshToken = async (id) => {
     try {
         const userRefreshToken = await RefreshToken.findByPk(id);
         if (userRefreshToken) {
-            const userRefreshTokenToBeDeleted = userRefreshToken.get({ plain: true });
+            const userRefreshTokenToBeDeleted = userRefreshToken.get({plain: true});
             await userRefreshToken.destroy(); // Ensure to await the destruction
             return userRefreshTokenToBeDeleted;
         } else {
             return null;
         }
     } catch (error) {
-        return error;
+        throw error;
     }
 }
 
@@ -82,9 +82,9 @@ refreshTokenService.deleteRefreshToken = async (id) => {
  */
 refreshTokenService.deleteRefreshTokenForUser = async (userId) => {
     try {
-        await RefreshToken.destroy({ where: { userId: userId } });
+        await RefreshToken.destroy({where: {userId: userId}});
     } catch (error) {
-        return error;
+        throw error;
     }
 }
 

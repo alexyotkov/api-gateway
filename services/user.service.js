@@ -12,7 +12,8 @@ const userService = {};
  * @param {string} params.email - The user's email.
  * @param {string} params.password - The user's password (hashed).
  * @param {string} params.role - The user's role.
- * @returns {Promise<Object>} The created user object or an error.
+ * @returns {Promise<Object>} The created user object.
+ * @throws error
  */
 userService.createUser = async ({ username, email, password, role }) => {
     try {
@@ -24,7 +25,7 @@ userService.createUser = async ({ username, email, password, role }) => {
         });
         return user;
     } catch (error) {
-        return error;
+        throw error;
     }
 }
 
@@ -34,14 +35,15 @@ userService.createUser = async ({ username, email, password, role }) => {
  * @async
  * @function getUserByEmail
  * @param {string} email - The email of the user to retrieve.
- * @returns {Promise<Object|null>} The user object if found, or null if not found, or an error.
+ * @returns {Promise<Object|null>} The user object if found, or null if not found.
+ * @throws error
  */
 userService.getUserByEmail = async (email) => {
     try {
         const user = await User.findOne({ where: { email: email } });
         return user;
     } catch (error) {
-        return error;
+        throw error;
     }
 }
 
@@ -51,14 +53,15 @@ userService.getUserByEmail = async (email) => {
  * @async
  * @function getUserById
  * @param {number|string} id - The ID of the user to retrieve.
- * @returns {Promise<Object|null>} The user object if found, or null if not found, or an error.
+ * @returns {Promise<Object|null>} The user object if found, or null if not found.
+ * @throws error
  */
 userService.getUserById = async (id) => {
     try {
         const user = await User.findByPk(id);
         return user;
     } catch (error) {
-        return error;
+        throw error;
     }
 }
 
